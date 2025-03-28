@@ -1,148 +1,201 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { Card } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { db, ref, set, push } from "../firebase"; // Correctly import push for adding data with auto ID
+import { db, set, push } from "../firebase";
+import { ref, onValue } from "firebase/database";
 
 export default function HomeScreen() {
-  // Function to set supply-water to true and reset to false after 10 seconds
-  const handleFeedWater = () => {
-    console.log("history");
-    // Set 'supply-water' to true in Firebase Realtime Database
-    set(ref(db, "supply-water"), true)
-      .then(() => {
-        alert("Water Supplied!");
+  const [waterCount, setWaterCount] = useState(0);
+  const [foodCount, setFoodCount] = useState(0);
 
-        // Add the action to the history
-        addToHistory("Water");
+  useEffect(() => {
+    fetchTodayHistory();
+  }, []);
 
-        // Reset to false after 10 seconds
-        setTimeout(() => {
-          set(ref(db, "supply-water"), false)
-            .then(() => {
-              console.log("Water supply reset to false");
-            })
-            .catch((error) => {
-              console.error("Error resetting water supply:", error);
-            });
-        }, 10000); // 10000 milliseconds = 10 seconds
-      })
-      .catch((error) => {
-        console.error("Error setting water supply:", error);
-      });
+  const fetchTodayHistory = () => {
+    const historyRef = ref(db, "history");
+    const today = new Date().toLocaleDateString();
+
+    onValue(historyRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const historyArray = Object.values(data);
+        const todayHistory = historyArray.filter((item) => item.date === today);
+
+        const waterCount = todayHistory.filter((item) => item.action === "Water").length;
+        const foodCount = todayHistory.filter((item) => item.action === "Food").length;
+
+        setWaterCount(waterCount);
+        setFoodCount(foodCount);
+      }
+    });
   };
 
-  // Function to set supply-food to true and reset to false after 10 seconds
-  const handleFeedFood = () => {
-    // Set 'supply-food' to true in Firebase Realtime Database
-    set(ref(db, "supply-food"), true)
+  const handleFeed = (action) => {
+    set(ref(db, `supply-${action.toLowerCase()}`), true)
       .then(() => {
-        console.log("history");
-        alert("Food Supplied!");
-        console.log("history");
+        alert(`${action} Supplied!`);
+        addToHistory(action);
 
-        // Add the action to the history
-        addToHistory("Food");
-
-        // Reset to false after 10 seconds
         setTimeout(() => {
-          set(ref(db, "supply-food"), false)
-            .then(() => {
-              console.log("Food supply reset to false");
-            })
-            .catch((error) => {
-              console.error("Error resetting food supply:", error);
-            });
-        }, 10000); // 10000 milliseconds = 10 seconds
+          set(ref(db, `supply-${action.toLowerCase()}`), false);
+        }, 10000);
       })
-      .catch((error) => {
-        console.error("Error setting food supply:", error);
-      });
+      .catch((error) => console.error(`Error setting ${action} supply:`, error));
   };
 
-  // Function to add the supply action to the history in the database
   const addToHistory = (action) => {
     const currentDate = new Date();
     const historyRef = ref(db, "history");
-    console.log("history");
 
-    // Create a new record for the action
     const newHistory = {
       date: currentDate.toLocaleDateString(),
       time: currentDate.toLocaleTimeString(),
       action: action,
     };
 
-    // Print the reference and the data being pushed
-    console.log("Pushing to history with data:", newHistory);
-
-    // Use push to automatically generate a unique ID for each new history entry
     push(historyRef, newHistory)
-      .then(() => {
-        console.log("History updated successfully!");
-      })
-      .catch((error) => {
-        console.error("Error updating history:", error);
-      });
+      .then(() => fetchTodayHistory()) // Update count after adding
+      .catch((error) => console.error("Error updating history:", error));
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.buttonWater} onPress={handleFeedWater}>
-        <Ionicons name="water" size={24} color="#fff" />
-        <Text style={styles.buttonText}>Supply Water</Text>
-      </TouchableOpacity>
+    <ScrollView style={styles.container}>
+      <Text style={styles.mainTitle}>Today's Summary</Text>
 
-      <TouchableOpacity style={styles.buttonFood} onPress={handleFeedFood}>
-        <Ionicons name="fast-food" size={24} color="#fff" />
-        <Text style={styles.buttonText}>Supply Food</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.summaryContainer}>
+        <Card style={[styles.cardL, { borderLeftColor: "#0077b6" }]}>
+          <Card.Content>
+            <View style={styles.summaryItem}>
+              <Ionicons name="water" size={50} color="#0077b6" />
+              <Text style={styles.summaryText}>Water Supplied</Text>
+              <Text style={styles.valueText}>{waterCount} times</Text>
+            </View>
+          </Card.Content>
+        </Card>
+
+        <Card style={[styles.cardR, { borderLeftColor: "#e76f51" }]}>
+          <Card.Content>
+            <View style={styles.summaryItem}>
+              <Ionicons name="fast-food" size={50} color="#e76f51" />
+              <Text style={styles.summaryText}>Food Supplied</Text>
+              <Text style={styles.valueText}>{foodCount} times</Text>
+            </View>
+          </Card.Content>
+        </Card>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.buttonWater} onPress={() => handleFeed("Water")}>
+          <Ionicons name="water" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Supply Water</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.buttonFood} onPress={() => handleFeed("Food")}>
+          <Ionicons name="fast-food" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Supply Food</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f9f9f9',
+    paddingHorizontal: 15,
+    paddingTop: 20,
+  },
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
+  },
+  summaryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,  // Reduced the margin between the cards
+  },
+  cardL: {
+    width: '45%',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    elevation: 5,
+    borderLeftWidth: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 5, height: 5 },
+    shadowRadius: 10,
+    elevation: 10,
+    alignItems: 'center',
+    marginLeft:10
+  },
+  cardR: {
+    width: '45%',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    elevation: 5,
+    borderLeftWidth: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 5, height: 5 },
+    shadowRadius: 10,
+    elevation: 10,
+    alignItems: 'center',
+    marginRight:10
+  },
+  summaryItem: {
+    flexDirection: 'column', // Stack the icon and text vertically
+    alignItems: 'center',
+  },
+  summaryText: {
+    fontSize: 18,
+    marginTop: 10,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  valueText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: 20,
   },
   buttonWater: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#0077b6",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0077b6',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
     marginVertical: 10,
     width: 200,
-    justifyContent: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    justifyContent: 'center',
   },
   buttonFood: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#e76f51",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e76f51',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
     marginVertical: 10,
     width: 200,
-    justifyContent: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    justifyContent: 'center',
   },
   buttonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginLeft: 10,
   },
 });
