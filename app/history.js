@@ -55,7 +55,7 @@ export default function History() {
     tableHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      backgroundColor: '#0077b6',
+      backgroundColor: '#0288D1',
       padding: 10,
       borderRadius: 5,
     },

@@ -5,8 +5,18 @@ export default function Layout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused, size }) => {
           let iconName;
+          let iconColor;
+
+          // Set icon color using color codes based on focus state
+          if (focused) {
+            iconColor = "#0A102B"; // Orange color for active tab
+          } else {
+            iconColor = "#607D8B"; // Blue-grey color for inactive tab
+          }
+
+          // Determine the icon name based on the route
           if (route.name === "index") {
             iconName = focused ? "fast-food" : "fast-food-outline";
           } else if (route.name === "schedule") {
@@ -14,10 +24,12 @@ export default function Layout() {
           } else if (route.name === "history") {
             iconName = focused ? "time" : "time-outline";
           }
-          return <Ionicons name={iconName} size={size} color={color} />;
+
+          // Return the icon with the dynamic color
+          return <Ionicons name={iconName} size={size} color={iconColor} />;
         },
-        tabBarActiveTintColor: "blue",
-        tabBarInactiveTintColor: "gray",
+        tabBarActiveTintColor: "#0A102B",   // Active tab color (orange)
+        tabBarInactiveTintColor: "#607D8B", // Inactive tab color (blue-grey)
       })}
     >
       <Tabs.Screen name="index" options={{ title: "Manual Feed" }} />
