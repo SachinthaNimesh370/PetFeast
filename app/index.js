@@ -1,15 +1,19 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { db, ref, set } from "../firebase"; // Correctly import the functions
+import { db, ref, set, push } from "../firebase"; // Correctly import push for adding data with auto ID
 
 export default function HomeScreen() {
   // Function to set supply-water to true and reset to false after 10 seconds
   const handleFeedWater = () => {
+    console.log("history");
     // Set 'supply-water' to true in Firebase Realtime Database
     set(ref(db, "supply-water"), true)
       .then(() => {
         alert("Water Supplied!");
+
+        // Add the action to the history
+        addToHistory("Water");
 
         // Reset to false after 10 seconds
         setTimeout(() => {
@@ -32,7 +36,12 @@ export default function HomeScreen() {
     // Set 'supply-food' to true in Firebase Realtime Database
     set(ref(db, "supply-food"), true)
       .then(() => {
+        console.log("history");
         alert("Food Supplied!");
+        console.log("history");
+
+        // Add the action to the history
+        addToHistory("Food");
 
         // Reset to false after 10 seconds
         setTimeout(() => {
@@ -47,6 +56,32 @@ export default function HomeScreen() {
       })
       .catch((error) => {
         console.error("Error setting food supply:", error);
+      });
+  };
+
+  // Function to add the supply action to the history in the database
+  const addToHistory = (action) => {
+    const currentDate = new Date();
+    const historyRef = ref(db, "history");
+    console.log("history");
+
+    // Create a new record for the action
+    const newHistory = {
+      date: currentDate.toLocaleDateString(),
+      time: currentDate.toLocaleTimeString(),
+      action: action,
+    };
+
+    // Print the reference and the data being pushed
+    console.log("Pushing to history with data:", newHistory);
+
+    // Use push to automatically generate a unique ID for each new history entry
+    push(historyRef, newHistory)
+      .then(() => {
+        console.log("History updated successfully!");
+      })
+      .catch((error) => {
+        console.error("Error updating history:", error);
       });
   };
 

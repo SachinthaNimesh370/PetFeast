@@ -1,6 +1,5 @@
-// firebase.js
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get } from "firebase/database"; // Import get for fetching data
+import { getDatabase, ref, set, get, push } from "firebase/database"; // Make sure to import push
 
 const firebaseConfig = {
   apiKey: "AIzaSyDPjjndHLSJX8LuvtOppkGuepPVXQtOgng",
@@ -16,4 +15,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-export { db, ref, set, get }; // Export get as well
+export { db, ref, set, get, push }; // Export push for adding data with auto ID

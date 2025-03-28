@@ -11,6 +11,8 @@ export default function Layout() {
             iconName = focused ? "fast-food" : "fast-food-outline";
           } else if (route.name === "schedule") {
             iconName = focused ? "calendar" : "calendar-outline";
+          } else if (route.name === "history") {
+            iconName = focused ? "time" : "time-outline";
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -20,6 +22,7 @@ export default function Layout() {
     >
       <Tabs.Screen name="index" options={{ title: "Manual Feed" }} />
       <Tabs.Screen name="schedule" options={{ title: "Schedule Feed" }} />
+      <Tabs.Screen name="history" options={{ title: "History" }} />
     </Tabs>
   );
 }
