@@ -4,24 +4,46 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { db, ref, set } from "../firebase"; // Correctly import the functions
 
 export default function HomeScreen() {
-  // Function to set supply-water to true
+  // Function to set supply-water to true and reset to false after 10 seconds
   const handleFeedWater = () => {
     // Set 'supply-water' to true in Firebase Realtime Database
     set(ref(db, "supply-water"), true)
       .then(() => {
         alert("Water Supplied!");
+
+        // Reset to false after 10 seconds
+        setTimeout(() => {
+          set(ref(db, "supply-water"), false)
+            .then(() => {
+              console.log("Water supply reset to false");
+            })
+            .catch((error) => {
+              console.error("Error resetting water supply:", error);
+            });
+        }, 10000); // 10000 milliseconds = 10 seconds
       })
       .catch((error) => {
         console.error("Error setting water supply:", error);
       });
   };
 
-  // Function to set supply-food to true
+  // Function to set supply-food to true and reset to false after 10 seconds
   const handleFeedFood = () => {
     // Set 'supply-food' to true in Firebase Realtime Database
     set(ref(db, "supply-food"), true)
       .then(() => {
         alert("Food Supplied!");
+
+        // Reset to false after 10 seconds
+        setTimeout(() => {
+          set(ref(db, "supply-food"), false)
+            .then(() => {
+              console.log("Food supply reset to false");
+            })
+            .catch((error) => {
+              console.error("Error resetting food supply:", error);
+            });
+        }, 10000); // 10000 milliseconds = 10 seconds
       })
       .catch((error) => {
         console.error("Error setting food supply:", error);

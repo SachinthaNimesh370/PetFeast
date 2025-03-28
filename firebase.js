@@ -1,6 +1,6 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set } from "firebase/database";  // Correct imports for Firebase v9+
+import { getDatabase, ref, set, get } from "firebase/database"; // Import get for fetching data
 
 const firebaseConfig = {
   apiKey: "AIzaSyDPjjndHLSJX8LuvtOppkGuepPVXQtOgng",
@@ -16,4 +16,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-export { db, ref, set };
+export { db, ref, set, get }; // Export get as well
