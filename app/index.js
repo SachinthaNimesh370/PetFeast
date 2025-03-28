@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View, StyleSheet } from "react-native";  // Added StyleSheet import
 import { Card } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { db, set, push } from "../firebase";
 import { ref, onValue } from "firebase/database";
-import { styles } from "./HomeScreenStyles"; // Import styles from separate file
 
 export default function HomeScreen() {
   const [waterCount, setWaterCount] = useState(0);
@@ -101,3 +100,101 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 15,
+    paddingTop: 20,
+  },
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
+  },
+  summaryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  cardL: {
+    width: '45%',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    elevation: 5,
+    borderLeftWidth: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 5, height: 5 },
+    shadowRadius: 10,
+    elevation: 10,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  cardR: {
+    width: '45%',
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    elevation: 5,
+    borderLeftWidth: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 5, height: 5 },
+    shadowRadius: 10,
+    elevation: 10,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  summaryItem: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  summaryText: {
+    fontSize: 18,
+    marginTop: 10,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  valueText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonWater: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0288D1',  // Blue button for water
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: 200,
+    justifyContent: 'center',
+  },
+  buttonFood: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF5722',  // Red-orange button for food
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: 200,
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+});

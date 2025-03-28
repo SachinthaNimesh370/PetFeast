@@ -1,7 +1,46 @@
-import { Tabs } from "expo-router";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Tabs } from 'expo-router'; // Import Tabs for navigation
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native'; // Import Lottie
 
 export default function Layout() {
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Simulate a 2-second delay for loading screen
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false); // Hide loading screen after 2 seconds
+    }, 3000);
+
+    return () => clearTimeout(timer); // Cleanup on unmount
+  }, []);
+
+  // Navigate only after layout is mounted
+  // useEffect(() => {
+  //   if (!loading) {
+  //    // router.push('/index'); // Navigate to main screen after 2 seconds
+  //   }
+  // }, [loading, router]);
+
+  // Show loading screen while waiting
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <LottieView
+          source={require('../assets/Animation - 1743164532159.json')}
+          autoPlay
+          loop
+          style={styles.loadingAnimation}
+        />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Root Layout renders the Tab Navigator or Slot for child screens
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -9,7 +48,7 @@ export default function Layout() {
           let iconName;
           let iconColor;
 
-          // Set icon color using color codes based on focus state
+          // Set icon color based on focus state
           if (focused) {
             iconColor = "#0A102B"; // Orange color for active tab
           } else {
@@ -25,7 +64,6 @@ export default function Layout() {
             iconName = focused ? "time" : "time-outline";
           }
 
-          // Return the icon with the dynamic color
           return <Ionicons name={iconName} size={size} color={iconColor} />;
         },
         tabBarActiveTintColor: "#0A102B",   // Active tab color (orange)
@@ -38,3 +76,21 @@ export default function Layout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+  },
+  loadingAnimation: {
+    width: 300,
+    height: 300,
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#333',
+    marginTop: 20,
+  },
+});
