@@ -10,21 +10,23 @@ export default function ScheduleScreen() {
   const [editIndex, setEditIndex] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Fetch schedules from Firebase
   useEffect(() => {
-    const schedulesRef = ref(db, "schedules");
-    get(schedulesRef)
-      .then((snapshot) => {
+    const fetchSchedules = async () => {
+      try {
+        const schedulesRef = ref(db, "schedules");
+        const snapshot = await get(schedulesRef);
         if (snapshot.exists()) {
           const data = snapshot.val();
           const sortedSchedules = Object.values(data).sort((a, b) => new Date(a) - new Date(b));
           setSchedules(sortedSchedules);
         }
-      })
-      .catch((error) => console.error("Error fetching schedules:", error));
+      } catch (error) {
+        console.error("Error fetching schedules:", error);
+      }
+    };
+    fetchSchedules();
   }, []);
 
-  // Add or Edit a schedule
   const handleConfirm = (date) => {
     let updatedSchedules = [...schedules];
     if (editIndex !== null) {
@@ -39,13 +41,15 @@ export default function ScheduleScreen() {
     setShowPicker(false);
   };
 
-  // Update schedules in Firebase
-  const updateSchedulesInFirebase = (updatedSchedules) => {
-    const schedulesRef = ref(db, "schedules");
-    set(schedulesRef, updatedSchedules).catch((error) => console.error("Error updating schedules:", error));
+  const updateSchedulesInFirebase = async (updatedSchedules) => {
+    try {
+      const schedulesRef = ref(db, "schedules");
+      await set(schedulesRef, updatedSchedules);
+    } catch (error) {
+      console.error("Error updating schedules:", error);
+    }
   };
 
-  // Delete a schedule
   const handleDelete = (index) => {
     Alert.alert("Delete Schedule", "Are you sure you want to delete this schedule?", [
       { text: "Cancel", style: "cancel" },
@@ -57,7 +61,6 @@ export default function ScheduleScreen() {
     ]);
   };
 
-  // Open the date picker for editing
   const handleEdit = (index) => {
     setEditIndex(index);
     setSelectedDate(new Date(schedules[index]));
@@ -81,7 +84,7 @@ export default function ScheduleScreen() {
       <FlatList
         data={schedules}
         keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.listContainer} // Center the list horizontally
+        contentContainerStyle={styles.listContainer}
         renderItem={({ item, index }) => (
           <View style={styles.scheduleItem}>
             <Text style={styles.scheduleText}>{new Date(item).toLocaleString()}</Text>
@@ -122,14 +125,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   addButtonText: {
-    color: "#ffff",
+    color: "#fff",
     fontSize: 18,
     marginLeft: 10,
   },
   listContainer: {
-    alignItems: "center", // Centers the list horizontally
-    justifyContent: "center", // Optional: ensures that the list is centered vertically if the list is small
-    width: "100%", // Ensures the list takes up the full width
+    alignItems: "center",
+    width: "100%",
   },
   scheduleItem: {
     backgroundColor: "#fff",
