@@ -31,18 +31,30 @@ export default function HomeScreen() {
     });
   };
 
-  const handleFeed = (action) => {
-    set(ref(db, `supply-${action.toLowerCase()}`), true)
+  const handleFeedWater = () => {
+     set(ref(db, `watercount`), true)
       .then(() => {
-        alert(`${action} Supplied!`);
-        addToHistory(action);
+        alert(`Water Supplied!`);
+        addToHistory('Water');
 
         setTimeout(() => {
-          set(ref(db, `supply-${action.toLowerCase()}`), false);
+          set(ref(db, `watercount`), false);
         }, 10000);
       })
-      .catch((error) => console.error(`Error setting ${action} supply:`, error));
+      .catch((error) => console.error(`Error setting water supply:`, error));
   };
+  const handleFeedFood = () => {
+    set(ref(db, `foodcount`), true)
+     .then(() => {
+       alert(`Food Supplied!`);
+       addToHistory('Food');
+
+       setTimeout(() => {
+         set(ref(db, `foodcount`), false);
+       }, 10000);
+     })
+     .catch((error) => console.error(`Error setting food supply:`, error));
+ };
 
   const addToHistory = (action) => {
     const currentDate = new Date();
@@ -83,12 +95,12 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, { backgroundColor: "#0288D1" }]} onPress={() => handleFeed("Water")}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: "#0288D1" }]} onPress={() => handleFeedWater()}>
           <Ionicons name="water" size={24} color="#fff" />
           <Text style={styles.buttonText}>Supply Water</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: "#FF5722" }]} onPress={() => handleFeed("Food")}>
+        <TouchableOpacity style={[styles.button, { backgroundColor: "#FF5722" }]} onPress={() => handleFeedFood()}>
           <Ionicons name="fast-food" size={24} color="#fff" />
           <Text style={styles.buttonText}>Supply Food</Text>
         </TouchableOpacity>
