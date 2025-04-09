@@ -10,6 +10,7 @@ import { getDatabase, ref, set, get, push } from "firebase/database"; // Make su
 //   appId: "1:707146170253:web:ce13f0ab0be034071107c4",
 //   measurementId: "G-0NC9ZXJ3E1",
 // };
+
 const firebaseConfig = {
   apiKey: "AIzaSyAZ_9uKzgOFgB3E5d48P62YkG0sndTGTRY",
   authDomain: "smartfoodfeeder.firebaseapp.com",

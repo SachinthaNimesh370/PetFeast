@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -9,6 +9,7 @@ export default function ScheduleScreen() {
   const [showPicker, setShowPicker] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
+  const executedTimes = useRef(new Set());
 
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -27,18 +28,44 @@ export default function ScheduleScreen() {
     fetchSchedules();
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const nowRounded = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes());
+
+      schedules.forEach((isoStr) => {
+        const scheduledTime = new Date(isoStr);
+        const scheduledRounded = new Date(scheduledTime.getFullYear(), scheduledTime.getMonth(), scheduledTime.getDate(), scheduledTime.getHours(), scheduledTime.getMinutes());
+
+        if (nowRounded.getTime() === scheduledRounded.getTime() && !executedTimes.current.has(isoStr)) {
+          handleFeedFood();
+          executedTimes.current.add(isoStr);
+        }
+
+        console.log("Now:", nowRounded.getTime());
+        console.log("Scheduled:", scheduledRounded.getTime());
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [schedules]);
+
   const handleConfirm = (date) => {
     let updatedSchedules = [...schedules];
+    const isoTime = date.toISOString(); // ✅ Changed from toLocaleString() to toISOString()
+
     if (editIndex !== null) {
-      updatedSchedules[editIndex] = date.toISOString();
+      updatedSchedules[editIndex] = isoTime;
       setEditIndex(null);
     } else {
-      updatedSchedules.push(date.toISOString());
+      updatedSchedules.push(isoTime);
     }
+
     updatedSchedules.sort((a, b) => new Date(a) - new Date(b));
     setSchedules(updatedSchedules);
     updateSchedulesInFirebase(updatedSchedules);
     setShowPicker(false);
+    setSelectedDate(null);
   };
 
   const updateSchedulesInFirebase = async (updatedSchedules) => {
@@ -53,27 +80,55 @@ export default function ScheduleScreen() {
   const handleDelete = (index) => {
     Alert.alert("Delete Schedule", "Are you sure you want to delete this schedule?", [
       { text: "Cancel", style: "cancel" },
-      { text: "Delete", onPress: () => {
-        const updatedSchedules = schedules.filter((_, i) => i !== index);
-        setSchedules(updatedSchedules);
-        updateSchedulesInFirebase(updatedSchedules);
-      }, style: "destructive" },
+      {
+        text: "Delete",
+        onPress: () => {
+          const updatedSchedules = schedules.filter((_, i) => i !== index);
+          setSchedules(updatedSchedules);
+          updateSchedulesInFirebase(updatedSchedules);
+        },
+        style: "destructive",
+      },
     ]);
   };
 
   const handleEdit = (index) => {
     setEditIndex(index);
-    setSelectedDate(new Date(schedules[index]));
+    setSelectedDate(new Date(schedules[index])); // ✅ No change needed
     setShowPicker(true);
+  };
+
+  const addToHistory = (action) => {
+    const historyRef = ref(db, `SmartFeeder/history/${Date.now()}`);
+    set(historyRef, { type: action, timestamp: new Date().toLocaleString() });
+  };
+
+  const handleFeedFood = () => {
+    set(ref(db, `SmartFeeder/foodcount`), true)
+      .then(() => {
+        alert(`Food Supplied!`);
+        addToHistory("Food");
+        setTimeout(() => {
+          set(ref(db, `SmartFeeder/foodcount`), false);
+        }, 10000);
+      })
+      .catch((error) => console.error(`Error setting food supply:`, error));
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Feeding Schedule</Text>
-      <TouchableOpacity style={styles.addButton} onPress={() => setShowPicker(true)}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          setSelectedDate(null);
+          setShowPicker(true);
+        }}
+      >
         <Ionicons name="add-circle" size={30} color="#fff" />
         <Text style={styles.addButtonText}>Add New Schedule</Text>
       </TouchableOpacity>
+
       <DateTimePickerModal
         isVisible={showPicker}
         mode="datetime"
@@ -81,13 +136,16 @@ export default function ScheduleScreen() {
         onConfirm={handleConfirm}
         onCancel={() => setShowPicker(false)}
       />
+
       <FlatList
         data={schedules}
         keyExtractor={(item, index) => index.toString()}
         contentContainerStyle={styles.listContainer}
         renderItem={({ item, index }) => (
           <View style={styles.scheduleItem}>
-            <Text style={styles.scheduleText}>{new Date(item).toLocaleString()}</Text>
+            <Text style={styles.scheduleText}>
+              {new Date(item).toLocaleString()} {/* ✅ Format ISO time to local string */}
+            </Text>
             <View style={styles.iconContainer}>
               <TouchableOpacity onPress={() => handleEdit(index)}>
                 <Ionicons name="pencil" size={24} color="#007bff" />

@@ -18,14 +18,6 @@ export default function Layout() {
     return () => clearTimeout(timer); // Cleanup on unmount
   }, []);
 
-  // Navigate only after layout is mounted
-  // useEffect(() => {
-  //   if (!loading) {
-  //    // router.push('/index'); // Navigate to main screen after 2 seconds
-  //   }
-  // }, [loading, router]);
-
-  // Show loading screen while waiting
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
